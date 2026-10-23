@@ -3,7 +3,8 @@
 Control Ferroli electric radiators (the ones managed by the **FERROLI ELECTRIC** app) from Home Assistant.
 
 This is an unofficial integration. It talks to the same Ferroli cloud the app uses, so it needs internet access
-and may break if Ferroli changes that API. It is not affiliated with or endorsed by Ferroli.
+and may break if Ferroli changes that API. It is not affiliated with or endorsed by Ferroli; the Ferroli name
+and logo are trademarks of Ferroli S.p.A. and are used only to identify the radiators this integration works with.
 
 ## Features
 

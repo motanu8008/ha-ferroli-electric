@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ferroli Electric",
+        "description": "Log in with the same email and password you use in the FERROLI ELECTRIC app.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ferroli Electric",
+        "description": "The Ferroli cloud rejected the password for {username}. Enter the current one.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Wrong email or password.",
+      "cannot_connect": "Could not reach the Ferroli cloud."
+    },
+    "abort": {
+      "already_configured": "This Ferroli account is already added.",
+      "reauth_successful": "Logged in again."
+    }
+  },
+  "entity": {
+    "climate": {
+      "radiator": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "comfort": "Comfort",
+              "eco": "Eco",
+              "away": "Anti-frost",
+              "program": "Program",
+              "boost": "Boost (1 h)"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "energy_today": {
+        "name": "Energy today"
+      },
+      "cost_today": {
+        "name": "Cost today"
+      }
+    },
+    "switch": {
+      "open_window_detection": {
+        "name": "Open window detection"
+      },
+      "adaptive_start": {
+        "name": "Adaptive start"
+      },
+      "easy_mode": {
+        "name": "EASY mode"
+      },
+      "keypad_lock": {
+        "name": "Keypad lock"
+      }
+    },
+    "number": {
+      "temperature_offset": {
+        "name": "Temperature offset"
+      },
+      "power_limit": {
+        "name": "Power limit"
+      },
+      "display_brightness": {
+        "name": "Display brightness"
+      },
+      "display_timeout": {
+        "name": "Display timeout"
+      }
+    }
+  },
+  "exceptions": {
+    "radiator_offline": {
+      "message": "The radiator is offline (unplugged or without Wi-Fi). Plug it in and try again."
+    }
+  }
+}

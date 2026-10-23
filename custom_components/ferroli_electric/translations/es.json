@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ferroli Electric",
+        "description": "Inicia sesión con el mismo correo y contraseña que usas en la app FERROLI ELECTRIC.",
+        "data": {
+          "username": "Correo electrónico",
+          "password": "Contraseña"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ferroli Electric",
+        "description": "La nube de Ferroli ha rechazado la contraseña de {username}. Introduce la actual.",
+        "data": {
+          "password": "Contraseña"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Correo o contraseña incorrectos.",
+      "cannot_connect": "No se ha podido conectar con la nube de Ferroli."
+    },
+    "abort": {
+      "already_configured": "Esta cuenta de Ferroli ya está añadida.",
+      "reauth_successful": "Sesión iniciada de nuevo."
+    }
+  },
+  "entity": {
+    "climate": {
+      "radiator": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "comfort": "Confort",
+              "eco": "Eco",
+              "away": "Antihielo",
+              "program": "Programa",
+              "boost": "Forzado (1 h)"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "energy_today": {
+        "name": "Consumo hoy"
+      },
+      "cost_today": {
+        "name": "Coste hoy"
+      }
+    },
+    "switch": {
+      "open_window_detection": {
+        "name": "Detección de ventana abierta"
+      },
+      "adaptive_start": {
+        "name": "Arranque adaptativo"
+      },
+      "easy_mode": {
+        "name": "Modo EASY"
+      },
+      "keypad_lock": {
+        "name": "Bloqueo del teclado"
+      }
+    },
+    "number": {
+      "temperature_offset": {
+        "name": "Corrección de temperatura"
+      },
+      "power_limit": {
+        "name": "Límite de potencia"
+      },
+      "display_brightness": {
+        "name": "Brillo de la pantalla"
+      },
+      "display_timeout": {
+        "name": "Duración de la pantalla encendida"
+      }
+    }
+  },
+  "exceptions": {
+    "radiator_offline": {
+      "message": "El radiador está desconectado (sin enchufar o sin Wi-Fi). Enchúfalo y vuelve a intentarlo."
+    }
+  }
+}

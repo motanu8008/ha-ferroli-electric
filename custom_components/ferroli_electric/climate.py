@@ -79,8 +79,9 @@ class FerroliRadiator(FerroliEntity, ClimateEntity):
 
     @property
     def current_temperature(self) -> float | None:
-        # An unplugged radiator's last reading can be weeks old.
-        return _num(self._rad.get("TempActual")) if self.online else None
+        # A radiator only reports while it is on, so when it's off (or offline) the last reading can be hours or
+        # weeks old; the app hides it too.
+        return _num(self._rad.get("TempActual")) if self.hvac_mode == HVACMode.HEAT else None
 
     @property
     def target_temperature(self) -> float | None:
@@ -126,10 +127,9 @@ class FerroliRadiator(FerroliEntity, ClimateEntity):
                 **{k: self._rad.get(k) for k in EXTRA_FIELDS if k in self._rad}}
 
     async def _send(self, changes: dict[str, Any]) -> None:
-        if not self.online:
-            # Turning an unplugged radiator off is a no-op; anything else would only queue a surprise for later.
-            if changes == {"Encendido": False}:
-                return
+        # Turning an offline radiator off is always allowed (it clears the "on" the cloud would apply once it is
+        # plugged in again); anything else would only queue a surprise for later.
+        if not self.online and changes != {"Encendido": False}:
             raise offline_error()
         await self.coordinator.api.update_radiator(self._rad.get("IdRadiador", self._rid), changes)
         await self.coordinator.async_request_refresh()

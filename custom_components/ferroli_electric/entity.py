@@ -11,9 +11,11 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from . import FerroliCoordinator
 from .const import DOMAIN
 
-# The cloud never flags an unplugged radiator (Err_Offline stays false) and keeps serving its last state;
-# CurrentUTCDate is when the radiator last reported, so a radiator silent for this long counts as offline.
-OFFLINE_AFTER = timedelta(hours=1)
+# The cloud never flags an unplugged radiator (Err_Offline stays false) and keeps serving its last state.
+# CurrentUTCDate is when the radiator last reported, but a radiator only reports while it is on: like the app,
+# one that should be heating and has been silent for this long counts as offline; one that is off can't be told
+# apart from an unplugged one and counts as online.
+OFFLINE_AFTER = timedelta(minutes=20)
 
 
 def truthy(value: Any) -> bool:
@@ -29,9 +31,11 @@ def last_report(rad: dict[str, Any]) -> datetime | None:
 
 
 def is_online(rad: dict[str, Any]) -> bool:
-    """False when the radiator isn't connected (unplugged): the cloud then keeps its last state."""
+    """False when a radiator that should be heating isn't reporting (unplugged or without Wi-Fi)."""
     if truthy(rad.get("Err_Offline")):
         return False
+    if not (truthy(rad.get("Encendido")) or truthy(rad.get("ModoForzado"))):
+        return True
     seen = last_report(rad)
     return seen is None or datetime.now(timezone.utc) - seen < OFFLINE_AFTER
 

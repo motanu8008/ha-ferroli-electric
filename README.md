@@ -31,12 +31,14 @@ For every radiator on your account (all installations and zones):
 
 ### Unplugged radiators
 
-The Ferroli cloud never marks an unplugged radiator as offline: it keeps serving its last state, so it would
-look like it is still heating. This integration treats a radiator that hasn't reported for more than an hour
-as offline: the thermostat shows **off** with no current temperature, and turning it on or changing a setting
-fails with a clear error instead of queueing a change for whenever it gets plugged in again. Turning an
-offline radiator off is accepted (it is off already). The thermostat's `online` and `last_report` attributes
-show what the integration sees.
+The Ferroli cloud never marks an unplugged radiator as offline: it keeps serving its last state, so a radiator
+that was switched on and then unplugged would look like it is still heating. A radiator only reports while it
+is on, so, like the app, this integration treats a radiator that **should be heating** and hasn't reported for
+20 minutes as offline: the thermostat shows **off** with no current temperature, and turning it on or changing
+a setting fails with a clear error instead of queueing a change for whenever it gets plugged in again. Turning
+it off is always sent, so it won't start heating by surprise once plugged back in. A radiator that is off
+can't be told apart from an unplugged one and is treated as online. The thermostat's `online` and
+`last_report` attributes show what the integration sees.
 
 ## Installation
 

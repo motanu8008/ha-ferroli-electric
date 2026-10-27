@@ -1,7 +1,7 @@
 """Ferroli Electric radiators (cloud)."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from typing import Any
 
@@ -20,6 +20,15 @@ PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.SWITCH, Platform.NUMBER
 CONSUMPTION_EVERY = timedelta(minutes=5)
 
 
+def truthy(value: Any) -> bool:
+    return value is True or str(value).lower() in ("true", "1")
+
+
+def should_heat(rad: dict[str, Any]) -> bool:
+    """On (or in forced mode), as far as the cloud knows."""
+    return truthy(rad.get("Encendido")) or truthy(rad.get("ModoForzado"))
+
+
 class FerroliCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     """Polls every installation and returns {radiator_id: radiator}."""
 
@@ -28,6 +37,8 @@ class FerroliCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         self.api = api
         self._consumption: dict[str, dict[str, Any]] = {}
         self._consumption_at: datetime | None = None
+        # When each radiator was seen switching on: it only starts reporting a minute or so later.
+        self._on_since: dict[str, datetime | None] = {}
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         try:
@@ -53,8 +64,17 @@ class FerroliCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     except FerroliApiError as err:
                         _LOGGER.debug("consumption for %s failed: %s", rid, err)
                 self._consumption_at = datetime.now()
+            now = datetime.now(timezone.utc)
             for rid, rad in radiators.items():
                 rad["_consumo"] = self._consumption.get(rid, {})
+                if not should_heat(rad):
+                    self._on_since[rid] = None
+                elif rid in self._on_since and self._on_since[rid] is None:
+                    # Switched on since the last poll (unknown when it was on already at startup).
+                    self._on_since[rid] = now
+                else:
+                    self._on_since.setdefault(rid, None)
+                rad["_on_since"] = self._on_since[rid]
             return radiators
         except FerroliAuthError as err:
             raise ConfigEntryAuthFailed(err) from err

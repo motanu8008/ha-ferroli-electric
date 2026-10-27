@@ -13,11 +13,13 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import FerroliApi, FerroliApiError, FerroliAuthError
-from .const import DOMAIN, SCAN_INTERVAL_SECONDS
+from .const import DOMAIN, SCAN_INTERVAL_OFF, SCAN_INTERVAL_ON
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.SWITCH, Platform.NUMBER]
-CONSUMPTION_EVERY = timedelta(minutes=5)
+# Today's consumption: every 5 minutes while a radiator is on, hourly while all are off (it only resets at midnight).
+CONSUMPTION_EVERY_ON = timedelta(minutes=5)
+CONSUMPTION_EVERY_OFF = timedelta(hours=1)
 
 
 def truthy(value: Any) -> bool:
@@ -33,7 +35,7 @@ class FerroliCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     """Polls every installation and returns {radiator_id: radiator}."""
 
     def __init__(self, hass: HomeAssistant, api: FerroliApi) -> None:
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=SCAN_INTERVAL_SECONDS))
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=SCAN_INTERVAL_ON))
         self.api = api
         self._consumption: dict[str, dict[str, Any]] = {}
         self._consumption_at: datetime | None = None
@@ -57,7 +59,9 @@ class FerroliCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                             continue
                         rad["_installation"] = inst.get("Nombre") or str(inst_id)
                         radiators[str(rad["IdRadiador"])] = rad
-            if self._consumption_at is None or datetime.now() - self._consumption_at > CONSUMPTION_EVERY:
+            any_on = any(should_heat(rad) for rad in radiators.values())
+            every = CONSUMPTION_EVERY_ON if any_on else CONSUMPTION_EVERY_OFF
+            if self._consumption_at is None or datetime.now() - self._consumption_at > every:
                 for rid, rad in radiators.items():
                     try:
                         self._consumption[rid] = await self.api.consumption(rad["IdRadiador"])
@@ -75,6 +79,7 @@ class FerroliCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                 else:
                     self._on_since.setdefault(rid, None)
                 rad["_on_since"] = self._on_since[rid]
+            self.update_interval = timedelta(seconds=SCAN_INTERVAL_ON if any_on else SCAN_INTERVAL_OFF)
             return radiators
         except FerroliAuthError as err:
             raise ConfigEntryAuthFailed(err) from err

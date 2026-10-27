@@ -56,7 +56,9 @@ Copy `custom_components/ferroli_electric` into your Home Assistant `config/custo
 Settings → Devices & services → **Add integration** → *Ferroli Electric*, then log in with the email and
 password of your FERROLI ELECTRIC app account. Every radiator becomes a device named as in the app.
 
-The cloud is polled every minute; energy and cost every 5 minutes. Changes are sent the same way the app sends them.
+The cloud has no push updates, so it is polled: every minute while a radiator is on, every 5 minutes while all
+are off (energy and cost every 5 minutes / hourly). Changes made from Home Assistant show up right away; a radiator
+switched on from its keypad or the app shows up at the next poll. Changes are sent the same way the app sends them.
 
 ## Troubleshooting
 
